@@ -1,59 +1,40 @@
-# Breakdown: A Video.js v10 Skin for Interactive Lessons & 2.5D Spatial Fields
+# Breakdown: Video.js v10 Player & Synchronized Infinite Canvas
 
 > **Official Entry for the Video.js v10 Skins Design Challenge**  
-> **Live Demo**: [https://cwwjacobs.github.io/videjs-breakdown-skin/](https://cwwjacobs.github.io/videjs-breakdown-skin/)  
+> **Live Site URL**: [https://cwwjacobs.github.io/videjs-breakdown-skin/](https://cwwjacobs.github.io/videjs-breakdown-skin/)  
 > **Judged by**: Creators of Video.js and Plyr | **Sponsor**: Mux
 
-![Breakdown Player Hero Screenshot](screenshot-player-hero.png)
+![Breakdown Hero Screenshot](screenshot-player-hero.png)
 
 ---
 
-## The Concept: From Passive Viewing to Active Exploration
+## The Concept
 
-Most video player skins assume passive consumption: controls float directly over the video, dimming the picture with dark gradient overlays whenever paused or hovered. 
+Most video player skins assume passive entertainment: controls float directly over the footage, dimming the picture whenever paused or hovered. But technical walkthroughs, coding lessons, and architecture reviews demand an active posture.
 
-In technical walkthroughs, systems architecture, and coding lessons, this model fails. When an engineer or student pauses a video, **the paused frame is precisely what they are studying—obscuring it breaks cognitive focus.**
+**Breakdown** pairs the **Video.js v10 player** on top with an interactive **Multi-Modal Infinite Canvas directly underneath**:
 
-**Breakdown** is a ground-up skin for the **Video.js v10** player that treats video as the guide for an **interactive learning canvas with a synchronized 2.5D spatial field underneath**.
+1. **Grounded Unobscured Video.js v10 Player (Top)**:
+   - Dedicated controls card sits cleanly below the video frame.
+   - Chapter-segmented seek rail with start ticks, chapter labels, and elapsed/remaining duration.
+   - Play/pause, chapter jumping, mute/volume slider, playback speed selection (1x, 1.25x, 1.5x, 2x), and fullscreen.
+   - Full keyboard navigation (`K`/`Space` play/pause, `M` mute, `F` fullscreen, `J`/`L` seek, `<`/`>` speed).
 
----
-
-## Key Innovations
-
-### 1. Non-Obscuring Grounded Layout
-Controls live entirely on a dedicated card **below** the video frame. The video card remains pristine and unobstructed, dynamically adapting to any aspect ratio (16:9, 4:3, 9:16) with no black bars and no hover overlays covering the picture.
-
-### 2. Synchronized 2.5D Spatial Field Underneath
-Positioned directly under and beside the player is an interactive spatial field:
-- **2.5D Isometric Architecture**: Rendered with clean single-light shading, atmospheric depth color, and layered SVG/CSS (following the `2.5Dimension` doctrine)—zero bulky 3D engine overhead and instantaneous loading.
-- **Dynamic Route & Entity Tracing**: As the video narrator explains network flows, token replays, or database queries, the 2.5D field illuminates the affected components and animates packet routes in real time.
-- **Domain-Aware Mockups**: Interactive terminals, cloud identity consoles, security logs, and 2.5D boundary zones that update in lockstep with video playback.
-
-### 3. Dual Playback Modes: Real-Time vs. Step-Pause
-A dedicated player mode switch gives viewers control over their learning cadence:
-- **Real-Time**: The spatial canvas and stage follow the video continuously.
-- **Step-Pause**: The player automatically pauses at the end of each chapter, allowing the viewer to inspect the 2.5D architecture, test hypothesis cards, or solve checkpoints before continuing.
-
-### 4. Chapter-Segmented Progress Rail
-The seek rail is segmented into distinct chapter spans with start ticks, chapter numbers, and jumping controls, so the viewer always knows the structure of the lesson.
-
-### 5. Universal Accessibility & Web Standards
-- **Video.js v10 Native**: Built strictly on modern `@videojs/html` 10.4 custom elements (`@videojs/player`, `@videojs/media`, `@videojs/container`).
-- **Full Keyboard Navigation**: Intuitive shortcuts (`K` play/pause, `M` mute, `F` fullscreen, `C` captions, `J`/`L` seek, `<`/`>` speed, chapter navigation).
-- **Visible Contrast & Reduced Motion**: High contrast focus rings, large mobile thumb targets, and graceful simplification under `prefers-reduced-motion`.
+2. **Synchronized Infinite Canvas (Underneath)**:
+   - Expansive, pannable, and zoomable 60fps infinite coordinate space.
+   - Responsive grid background that scales and translates seamlessly with mouse/touch interaction.
+   - **Auto-Camera Tracking**: As the video narrator moves through chapters, the camera automatically glides and frames the active chapter node on the canvas.
+   - **Click-to-Seek**: Clicking any node or architecture tier on the infinite canvas jumps the video playhead directly to that timestamp.
+   - **Spatial 2.5D Nodes**: Each chapter card renders multi-tier architectural models, status beacons, and active packet flows.
 
 ---
 
-## Live Interactive Lessons
+## Quick Navigation
 
-Try the player across three fictional training scenarios:
-
-1. [**Reason through an account compromise**](m1-account-compromise/index.html)  
-   *Three signals on one account. Features the 2.5D estate world, identity console mockup, and investigation workflow.*
-2. [**An authenticated request can still be unauthorized**](m2-api-authorization/index.html)  
-   *Authentication vs. authorization. Features 2.5D boundary zones and API policy enforcement.*
-3. [**Contain ransomware and prove recovery**](m3-ransomware-recovery/index.html)  
-   *Evidence trade-offs and isolation. Features 2.5D estate recovery pathways and containment flow.*
+- **Pan**: Click and drag anywhere on the canvas background.
+- **Zoom**: Mouse wheel or trackpad pinch (anchored to cursor).
+- **Target**: Click "Target Active Chapter" in the top bar to lock camera back to the video.
+- **Seek**: Click any chapter node to jump video playback.
 
 ---
 
