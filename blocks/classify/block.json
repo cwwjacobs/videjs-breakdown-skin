@@ -1,0 +1,16 @@
+{
+  "name": "classify",
+  "version": "1.0.0",
+  "title": "Sort the statements",
+  "summary": "Statements the viewer sorts into a few named groups, with a reason shown for each.",
+  "useWhen": "The viewer should be able to tell kinds of thing apart: fact from guess, cause from effect, safe from unsafe.",
+  "schema": "schema.json",
+  "entry": "index.js",
+  "example": "example.json",
+  "ids": [
+    "groups[].id"
+  ],
+  "refs": [
+    "items[].group"
+  ]
+}

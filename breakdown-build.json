@@ -1,0 +1,63 @@
+{
+  "builtBy": "breakdown 0.1.0",
+  "schemaVersion": 1,
+  "title": "Reason through an account compromise",
+  "blocks": [
+    {
+      "name": "classify",
+      "version": "1.0.0"
+    },
+    {
+      "name": "flow",
+      "version": "1.0.0"
+    },
+    {
+      "name": "key-points",
+      "version": "1.0.0"
+    },
+    {
+      "name": "mockup",
+      "version": "1.0.0"
+    },
+    {
+      "name": "quick-check",
+      "version": "1.0.0"
+    },
+    {
+      "name": "timeline",
+      "version": "1.0.0"
+    },
+    {
+      "name": "worked-example",
+      "version": "1.0.0"
+    },
+    {
+      "name": "world",
+      "version": "1.0.0"
+    }
+  ],
+  "files": [
+    "blocks/classify/block.json",
+    "blocks/classify/index.js",
+    "blocks/flow/block.json",
+    "blocks/flow/index.js",
+    "blocks/key-points/block.json",
+    "blocks/key-points/index.js",
+    "blocks/mockup/block.json",
+    "blocks/mockup/index.js",
+    "blocks/quick-check/block.json",
+    "blocks/quick-check/index.js",
+    "blocks/timeline/block.json",
+    "blocks/timeline/index.js",
+    "blocks/worked-example/block.json",
+    "blocks/worked-example/index.js",
+    "blocks/world/block.json",
+    "blocks/world/index.js",
+    "captions.vtt",
+    "index.html",
+    "m1-account-compromise.mp4",
+    "poster.jpg",
+    "runtime/player.css",
+    "runtime/player.js"
+  ]
+}

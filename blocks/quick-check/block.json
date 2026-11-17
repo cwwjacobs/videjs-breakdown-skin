@@ -1,0 +1,10 @@
+{
+  "name": "quick-check",
+  "version": "1.0.0",
+  "title": "Quick check",
+  "summary": "One question with a few answers; each answer gives feedback when chosen.",
+  "useWhen": "You want the viewer to test what the chapter just said before moving on.",
+  "schema": "schema.json",
+  "entry": "index.js",
+  "example": "example.json"
+}
