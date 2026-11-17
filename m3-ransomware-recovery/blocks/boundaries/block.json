@@ -1,0 +1,21 @@
+{
+  "name": "boundaries",
+  "version": "1.0.0",
+  "title": "Boundaries",
+  "summary": "Areas on a floor seen at an angle, and a path that crosses between them through checkpoints; step along the path.",
+  "useWhen": "Something crosses from one area to another and a check at the edge lets it through, stops it, or is missing; or two areas are cut apart. Position means belonging. For a plain sequence use flow.",
+  "schema": "schema.json",
+  "entry": "index.js",
+  "example": "example.json",
+  "ids": [
+    "zones[].id",
+    "parts[].id"
+  ],
+  "refs": [
+    "parts[].zone",
+    "links[].from",
+    "links[].to",
+    "steps[].from",
+    "steps[].to"
+  ]
+}

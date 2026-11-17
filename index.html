@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakdown: Video.js v10 Skin for Interactive Lessons & 2.5D Canvas</title>
+<style>
+  :root {
+    --bg: #efece6;
+    --text: #1d1c1a;
+    --subtle: #55524c;
+    --card-bg: #ffffff;
+    --card-border: #dcd8cf;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --tag-bg: #e4e0d7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141312;
+      --text: #edebe8;
+      --subtle: #a19d95;
+      --card-bg: #1f1d1b;
+      --card-border: #33302c;
+      --accent: #60a5fa;
+      --accent-bg: #1e293b;
+      --tag-bg: #2a2724;
+    }
+  }
+  body { margin: 0; padding: clamp(1.25rem, 4vw, 3rem); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); line-height: 1.5; }
+  main { max-width: 48rem; margin: 0 auto; }
+  header { margin-bottom: 2rem; }
+  .badge-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .badge { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.25rem 0.625rem; border-radius: 999px; background: var(--tag-bg); color: var(--text); }
+  .badge.highlight { background: var(--accent-bg); color: var(--accent); border: 1px solid currentColor; }
+  h1 { margin: 0 0 0.5rem; font-size: clamp(1.5rem, 3.5vw, 2.2rem); line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; }
+  .lead { font-size: 1.125rem; color: var(--subtle); margin-bottom: 1.5rem; }
+  .card-intro { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 1rem; padding: 1.25rem; margin-bottom: 2rem; }
+  .card-intro p { margin: 0 0 0.75rem; }
+  .card-intro p:last-child { margin-bottom: 0; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.75rem; margin-top: 1rem; font-size: 0.875rem; }
+  .feature-item { background: var(--tag-bg); padding: 0.75rem 1rem; border-radius: 0.5rem; }
+  .feature-item strong { display: block; color: var(--text); margin-bottom: 0.2rem; }
+  h2 { font-size: 1.25rem; margin: 2rem 0 0.75rem; font-weight: 600; }
+  ol { display: grid; gap: 0.875rem; padding: 0; margin: 0; list-style: none; }
+  li a { display: block; padding: 1.25rem 1.375rem; color: inherit; text-decoration: none; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 1rem; transition: transform 0.15s ease, border-color 0.15s ease; }
+  li a:hover { border-color: var(--text); transform: translateY(-1px); }
+  li a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  li strong { display: flex; align-items: center; justify-content: space-between; font-size: 1.125rem; }
+  li span { display: block; margin-top: 0.35rem; color: var(--subtle); font-size: 0.9375rem; line-height: 1.45; }
+  .btn-launch { display: inline-block; font-size: 0.8125rem; font-weight: 600; color: var(--accent); margin-top: 0.5rem; }
+  footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--card-border); font-size: 0.875rem; color: var(--subtle); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+  footer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="badge-bar">
+      <span class="badge highlight">Video.js v10 Skins Challenge</span>
+      <span class="badge">Breakdown Skin</span>
+      <span class="badge">2.5D Spatial Canvas</span>
+      <span class="badge">Apache 2.0</span>
+    </div>
+    <h1>The Breakdown Skin for Video.js v10</h1>
+    <p class="lead">A custom Video.js v10 player skin and active learning canvas with a synchronized 2.5D spatial field underneath.</p>
+  </header>
+
+  <section class="card-intro">
+    <p><strong>Design Thinking:</strong> Most video players float controls directly over footage, dimming the picture on pause. But in technical walkthroughs, the paused frame is precisely what the viewer is studying. Breakdown moves controls to a dedicated grounded card, segmented by chapters, and connects playback to an interactive 2.5D spatial field underneath.</p>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <strong>Unobscured Frame</strong>
+        Controls sit on their own card below the video—never on the picture.
+      </div>
+      <div class="feature-item">
+        <strong>2.5D Spatial Field</strong>
+        Synchronized isometric systems, route animations, and real-time state.
+      </div>
+      <div class="feature-item">
+        <strong>Step-Pause Mode</strong>
+        Video stops at chapter checkpoints for hands-on comprehension.
+      </div>
+      <div class="feature-item">
+        <strong>Keyboard & A11y</strong>
+        Full shortcut suite (K, M, F, J, L, &lt;, &gt;) and high-contrast visible focus.
+      </div>
+    </div>
+  </section>
+
+  <h2>Interactive Training Lessons (Live Demos)</h2>
+  <ol>
+    <li>
+      <a href="m1-account-compromise/index.html">
+        <strong>1. Reason Through an Account Compromise &rarr;</strong>
+        <span>A signal is not a verdict. MFA does not rule out token theft. Contain, scope, then verify. Features the 2.5D estate world, identity console mockup, and timeline analysis.</span>
+        <span class="btn-launch">Launch Player Demo &rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="m2-api-authorization/index.html">
+        <strong>2. An Authenticated Request Can Still Be Unauthorized &rarr;</strong>
+        <span>Authentication is not authorization. A safe query can return a forbidden row. Features 2.5D boundary zones and API policy enforcement.</span>
+        <span class="btn-launch">Launch Player Demo &rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="m3-ransomware-recovery/index.html">
+        <strong>3. Contain Ransomware and Prove Recovery &rarr;</strong>
+        <span>Isolate the harm first. Power-off has an evidence tradeoff. Recovery needs proof. Features 2.5D recovery paths and containment flow.</span>
+        <span class="btn-launch">Launch Player Demo &rarr;</span>
+      </a>
+    </li>
+  </ol>
+
+  <footer>
+    <div>Created for the Video.js v10 Skins Challenge &bull; Licensed under Apache 2.0</div>
+    <div><a href="https://github.com/cwwjacobs/videjs-breakdown-skin" target="_blank" rel="noopener">GitHub Repository</a></div>
+  </footer>
+</main>
+</body>
+</html>

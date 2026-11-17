@@ -1,0 +1,22 @@
+{
+  "name": "mockup",
+  "version": "1.0.0",
+  "title": "Mockup of the real screen",
+  "summary": "A realistic screen of what the video talks about (a console, an app, a page, a terminal, an inbox, a phone, a document) made of typed sections.",
+  "useWhen": "The video talks about something the viewer will meet on a real screen: an alert, a dashboard, a form, a log, an email, a command. Show what it will look like.",
+  "scene": "Under the video, when the video is about a tool, a console or a document the viewer will use for real: show that screen, and let each chapter point at the alert, row, place or button the narrator is talking about.",
+  "schema": "schema.json",
+  "entry": "index.js",
+  "example": "example.json",
+  "ids": [
+    "sections[].id",
+    "sections[].rows[].id",
+    "sections[].items[].id",
+    "sections[].places[].id",
+    "sections[].lines[].id"
+  ],
+  "refs": [
+    "sections[].travel.from -> sections[].places[].id",
+    "sections[].travel.to -> sections[].places[].id"
+  ]
+}

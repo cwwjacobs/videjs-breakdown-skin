@@ -1,0 +1,28 @@
+{
+  "name": "world",
+  "version": "1.0.0",
+  "title": "World (2D, 2.5D or 3D)",
+  "summary": "A small world of zones and the people and things in them, drawn as shaded solids; seen flat, at an angle or in 3D, with moving routes.",
+  "useWhen": "The video is about where things are and how they connect: a system's parts and its boundaries, a place, a path something takes. Choose the view by what depth means.",
+  "scene": "Under the video, for the system or place the whole video is about: who and what is where, what connects to what, and how something travels through it. Chapters focus the parts and routes the narrator is on.",
+  "views": [
+    "iso",
+    "top",
+    "front",
+    "orbit"
+  ],
+  "schema": "schema.json",
+  "entry": "index.js",
+  "example": "example.json",
+  "ids": [
+    "zones[].id",
+    "parts[].id",
+    "routes[].id"
+  ],
+  "refs": [
+    "parts[].zone -> zones[].id",
+    "connections[].from -> parts[].id",
+    "connections[].to -> parts[].id",
+    "routes[].via[] -> parts[].id"
+  ]
+}

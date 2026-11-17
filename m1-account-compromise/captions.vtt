@@ -1,0 +1,37 @@
+WEBVTT
+
+00:00:03.500 --> 00:00:16.380
+A signal is not a verdict. An employee account shows an unfamiliar
+session, a new external forwarding rule, and an unusual download.
+That is enough to investigate urgently, but not enough to name the
+root cause.
+
+00:00:19.000 --> 00:00:30.040
+First, separate observations from explanations. Correlate identity
+and application logs, check what the account can access, and
+verify the activity with the employee through a trusted channel.
+
+00:00:32.660 --> 00:00:48.140
+MFA does not rule out token theft. An attacker may replay a stolen
+session even after the real user completed multifactor
+authentication. A legitimate VPN or approved export may also
+explain individual signals, so test alternatives.
+
+00:00:50.760 --> 00:01:09.680
+Contain, scope, then verify. If unauthorized activity is
+corroborated, restrict the affected access under your incident
+process, revoke relevant sessions, and investigate forwarding
+rules, consent grants, and new authentication methods or devices.
+Preserve evidence while reducing ongoing harm.
+
+00:01:12.300 --> 00:01:24.220
+Do not promise that a password reset instantly ends every session.
+Existing access tokens or application-issued sessions may remain
+usable, depending on the application and its revocation support.
+
+00:01:26.840 --> 00:01:43.880
+Finish by checking that unauthorized access and persistence are
+removed. State what data access is confirmed, what remains
+unknown, and what evidence supports closure. In an interview,
+explain the decision, the tradeoff, and the verification, not just
+the tool you would open.
