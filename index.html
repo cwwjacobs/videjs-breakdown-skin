@@ -7,16 +7,15 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     :root {
-      --bg: #0b0d11;
-      --surface: #141820;
-      --surface-border: #222938;
-      --surface-hover: #1c2230;
-      --text: #f0f3f8;
-      --text-muted: #8b95a8;
+      --bg: #090b0f;
+      --surface: #12161f;
+      --surface-border: #21293a;
+      --surface-hover: #1a2232;
+      --text: #f0f4fc;
+      --text-muted: #8491a8;
       --accent: #00f5d4;
-      --accent-dim: rgba(0, 245, 212, 0.15);
-      --accent-glow: rgba(0, 245, 212, 0.4);
-      --danger: #f87171;
+      --accent-dim: rgba(0, 245, 212, 0.12);
+      --accent-glow: rgba(0, 245, 212, 0.35);
       --focus-ring: #38bdf8;
       --radius: 12px;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -24,115 +23,215 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-sans);
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
       user-select: none;
     }
 
-    /* TOP BAR */
-    header {
-      height: 52px;
-      min-height: 52px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--surface-border);
+    /* THE INFINITE CANVAS COVERS 100% OF THE VIEWPORT */
+    #canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      cursor: grab;
+      background-color: var(--bg);
+    }
+    #canvas-container.panning { cursor: grabbing; }
+
+    /* INFINITE GRID DOTS */
+    #grid-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    /* TRANSFORMABLE WORLD PLANE */
+    #canvas-world {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* TOP FLOATING APP BAR */
+    .app-header {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.25rem;
-      z-index: 50;
+      pointer-events: none;
+      z-index: 40;
     }
-    .brand {
+    .brand-pill {
+      pointer-events: auto;
+      background: rgba(18, 22, 31, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem 0.35rem 0.5rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     .brand-logo {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #00f5d4, #3b82f6);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
-      font-size: 13px;
-      color: #0b0d11;
+      font-size: 11px;
+      color: #090b0f;
     }
-    .brand-title {
-      font-size: 0.95rem;
+    .brand-name {
+      font-size: 0.82rem;
       font-weight: 700;
       letter-spacing: -0.01em;
     }
     .brand-badge {
-      font-size: 0.7rem;
-      font-weight: 600;
+      font-size: 0.68rem;
+      font-weight: 700;
       text-transform: uppercase;
-      padding: 0.15rem 0.5rem;
+      padding: 0.12rem 0.45rem;
       border-radius: 999px;
       background: var(--accent-dim);
       color: var(--accent);
       border: 1px solid var(--accent);
     }
-    .header-actions {
+
+    /* FLOATING TOP-RIGHT CANVAS CONTROLS */
+    .canvas-hud {
+      pointer-events: auto;
+      background: rgba(18, 22, 31, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 0.25rem 0.45rem;
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    .btn {
-      background: var(--surface-border);
-      color: var(--text);
-      border: 1px solid transparent;
-      padding: 0.35rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      transition: all 0.15s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
-    .btn:hover { background: var(--surface-hover); border-color: var(--text-muted); }
-    .btn:focus-visible { outline: 2px solid var(--focus-ring); }
-    .btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
-
-    /* SPLIT WORKSPACE */
-    .workspace {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
+    .hud-coords {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding: 0 0.5rem;
+      border-right: 1px solid var(--surface-border);
     }
-
-    /* VIDEO PLAYER SECTION (UPPER) */
-    .player-deck {
-      background: #000;
-      border-bottom: 1px solid var(--surface-border);
+    .hud-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text);
+      width: 28px;
+      height: 28px;
+      border-radius: 5px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
-      padding: 0.75rem 1rem 0.5rem;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      z-index: 20;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
+    .hud-btn:hover { background: var(--surface-hover); border-color: var(--surface-border); color: var(--accent); }
+    .hud-btn:focus-visible { outline: 2px solid var(--focus-ring); }
+    .hud-btn.text-btn { width: auto; padding: 0 0.55rem; font-size: 0.75rem; }
+
+    /* FLOATING VIDEO PLAYER MOUNTED ON THE CANVAS */
+    #floating-player-card {
+      position: absolute;
+      top: 4.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(340px, 48vw, 680px);
+      background: rgba(18, 22, 31, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5);
+      z-index: 35;
+      transition: width 0.3s ease, transform 0.3s ease;
+      overflow: hidden;
+    }
+    #floating-player-card.minimized {
+      width: 320px;
+      left: 1.5rem;
+      transform: none;
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.75rem;
+      background: rgba(0,0,0,0.4);
+      border-bottom: 1px solid var(--surface-border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .player-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+    .player-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+    .active-chapter-text {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .header-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+    .header-icon-btn:hover { background: var(--surface-hover); color: var(--text); }
+
     .video-viewport {
       width: 100%;
-      max-width: 820px;
       aspect-ratio: 16 / 9;
       background: #000;
-      border-radius: 8px 8px 0 0;
-      overflow: hidden;
       position: relative;
     }
     video {
@@ -154,47 +253,42 @@
     }
     .video-overlay-play.hidden { opacity: 0; pointer-events: none; }
     .play-circle {
-      width: 64px;
-      height: 64px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       background: var(--accent);
-      color: #0b0d11;
+      color: #090b0f;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
-      box-shadow: 0 0 25px var(--accent-glow);
+      font-size: 22px;
+      box-shadow: 0 0 20px var(--accent-glow);
       transition: transform 0.15s ease;
     }
     .video-overlay-play:hover .play-circle { transform: scale(1.08); }
 
     /* GROUNDED CONTROLS CARD */
-    .controls-card {
-      width: 100%;
-      max-width: 820px;
+    .controls-panel {
+      padding: 0.45rem 0.75rem;
       background: var(--surface);
-      border: 1px solid var(--surface-border);
-      border-top: none;
-      border-radius: 0 0 8px 8px;
-      padding: 0.5rem 0.75rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
 
-    /* CHAPTER SEEK RAIL */
+    /* SEEK RAIL WITH TICKS */
     .seek-container {
       position: relative;
-      height: 18px;
+      height: 16px;
       display: flex;
       align-items: center;
       cursor: pointer;
     }
     .seek-rail {
       width: 100%;
-      height: 6px;
-      background: #252d3d;
-      border-radius: 4px;
+      height: 5px;
+      background: #202738;
+      border-radius: 3px;
       position: relative;
       overflow: hidden;
     }
@@ -207,7 +301,6 @@
     .seek-ticks {
       position: absolute;
       inset: 0;
-      display: flex;
       pointer-events: none;
     }
     .tick {
@@ -215,171 +308,165 @@
       top: 0;
       bottom: 0;
       width: 2px;
-      background: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.45);
     }
     .seek-thumb {
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 11px;
+      height: 11px;
       background: #fff;
       border: 2px solid var(--accent);
       border-radius: 50%;
-      top: 3px;
+      top: 2.5px;
       left: 0%;
       transform: translateX(-50%);
       pointer-events: none;
-      box-shadow: 0 0 6px rgba(0,0,0,0.6);
+      box-shadow: 0 0 6px rgba(0,0,0,0.7);
     }
 
-    /* CONTROL BUTTONS ROW */
+    /* BUTTONS BAR */
     .controls-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
     }
-    .controls-left, .controls-right {
+    .ctrl-group {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
     .ctrl-btn {
       background: transparent;
       border: none;
       color: var(--text);
       cursor: pointer;
-      width: 30px;
-      height: 30px;
-      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       transition: all 0.15s ease;
     }
     .ctrl-btn:hover { background: var(--surface-hover); color: var(--accent); }
     .ctrl-btn:focus-visible { outline: 2px solid var(--focus-ring); }
-    .time-display {
+    .time-readout {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
-      margin-left: 0.35rem;
+      margin-left: 0.2rem;
     }
-    .time-display strong { color: var(--text); }
-    .chapter-badge {
-      font-size: 0.75rem;
-      background: var(--surface-border);
-      color: var(--text);
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
+    .time-readout strong { color: var(--text); }
+
+    /* BOTTOM CHAPTER NAVIGATION DOCK (MAKES NAV EFFORTLESS) */
+    .bottom-nav-dock {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 22, 31, 0.92);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--surface-border);
+      border-radius: 999px;
+      padding: 0.35rem 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      z-index: 40;
+      max-width: 90vw;
+      overflow-x: auto;
+    }
+    .chapter-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
       font-weight: 600;
-      max-width: 260px;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* INFINITE CANVAS SECTION (LOWER) */
-    .canvas-viewport {
-      flex: 1;
-      position: relative;
-      background: #090b0e;
-      overflow: hidden;
-      cursor: grab;
-    }
-    .canvas-viewport.panning { cursor: grabbing; }
-
-    /* INFINITE GRID PATTERN */
-    .infinite-grid {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-
-    /* TRANSFORM WORLD PLANE */
-    .canvas-world {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0;
-      height: 0;
-      transform-origin: 0 0;
-      will-change: transform;
-    }
-
-    /* CANVAS HUD / CONTROLS OVERLAY */
-    .canvas-hud {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(20, 24, 32, 0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--surface-border);
-      border-radius: 8px;
-      padding: 0.35rem 0.5rem;
-      z-index: 30;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      gap: 0.4rem;
+      transition: all 0.15s ease;
     }
-    .hud-info {
+    .chapter-pill:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--surface-border);
+    }
+    .chapter-pill.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .chapter-pill .pill-num {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      padding: 0 0.5rem;
-      border-right: 1px solid var(--surface-border);
+      font-size: 0.7rem;
+      opacity: 0.7;
     }
 
-    .canvas-bottom-hud {
+    /* MINI-MAP IN BOTTOM-RIGHT CORNER */
+    .minimap-container {
       position: absolute;
-      bottom: 1rem;
-      left: 1rem;
-      background: rgba(20, 24, 32, 0.85);
+      bottom: 1.25rem;
+      right: 1.25rem;
+      width: 140px;
+      height: 90px;
+      background: rgba(18, 22, 31, 0.85);
       backdrop-filter: blur(8px);
       border: 1px solid var(--surface-border);
       border-radius: 8px;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      z-index: 30;
+      z-index: 40;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
     }
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
+    .minimap-canvas {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .minimap-viewport-box {
+      position: absolute;
+      border: 1.5px solid var(--accent);
+      background: rgba(0, 245, 212, 0.1);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .minimap-dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-      animation: pulse 2s infinite;
+      background: rgba(255,255,255,0.4);
     }
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
+    .minimap-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
     }
 
-    /* SPATIAL CANVAS NODES */
-    .node-card {
+    /* SPATIAL CARDS ON THE INFINITE CANVAS */
+    .canvas-node {
       position: absolute;
-      width: 320px;
+      width: 340px;
       background: var(--surface);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
       padding: 1rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-      cursor: default;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      cursor: pointer;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      user-select: text;
     }
-    .node-card:hover { border-color: rgba(255,255,255,0.25); }
-    .node-card.active-chapter {
+    .canvas-node:hover {
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    .canvas-node.active-chapter {
       border-color: var(--accent);
-      box-shadow: 0 0 25px var(--accent-glow);
+      box-shadow: 0 0 30px var(--accent-glow);
     }
     .node-header {
       display: flex;
@@ -388,7 +475,7 @@
       margin-bottom: 0.6rem;
     }
     .node-tag {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -399,35 +486,34 @@
     }
     .node-time {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
     .node-title {
-      font-size: 1rem;
+      font-size: 0.96rem;
       font-weight: 700;
       margin-bottom: 0.35rem;
       line-height: 1.3;
     }
     .node-body {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
       line-height: 1.45;
     }
 
-    /* 2.5D ISOMETRIC VISUALIZER ON CANVAS */
+    /* 2.5D ISOMETRIC TIERS */
     .iso-tier-block {
       margin-top: 0.75rem;
-      background: #0e1218;
-      border: 1px solid #1e2635;
+      background: #0b0e14;
+      border: 1px solid #1a2233;
       border-radius: 6px;
-      padding: 0.6rem;
-      position: relative;
+      padding: 0.55rem;
     }
     .iso-plane {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       padding: 0.35rem 0.5rem;
       background: rgba(59, 130, 246, 0.12);
       border-left: 3px solid #3b82f6;
@@ -442,249 +528,259 @@
     }
     .iso-meta {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
     }
 
-    /* CONNECTOR LINES (SVG LAYER) */
-    .connections-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: visible;
-    }
-    .flow-line {
+    /* CONNECTING SVG ARROWS */
+    .flow-path {
       stroke: rgba(255,255,255,0.18);
-      stroke-width: 2;
-      stroke-dasharray: 6 4;
+      stroke-width: 2.5;
+      stroke-dasharray: 6 5;
       fill: none;
     }
-    .flow-line.active {
+    .flow-path.active {
       stroke: var(--accent);
-      stroke-width: 3;
+      stroke-width: 3.5;
       animation: dash 1s linear infinite;
     }
-    @keyframes dash {
-      to { stroke-dashoffset: -20; }
-    }
+    @keyframes dash { to { stroke-dashoffset: -22; } }
   </style>
 </head>
 <body>
 
-  <!-- TOP APP HEADER -->
-  <header>
-    <div class="brand">
+  <!-- INFINITE CANVAS COVERS 100% OF THE VIEW -->
+  <div id="canvas-container">
+    <div id="grid-layer"></div>
+
+    <!-- TRANSFORMABLE WORLD PLANE -->
+    <div id="canvas-world">
+      <!-- SVG CONNECTIONS -->
+      <svg id="svg-connectors" style="position: absolute; top: 0; left: 0; width: 3000px; height: 1200px; pointer-events: none; overflow: visible;">
+        <path id="path-0" class="flow-path active" d="M 380,560 C 440,560 460,560 520,560" />
+        <path id="path-1" class="flow-path" d="M 860,560 C 920,560 940,560 1000,560" />
+        <path id="path-2" class="flow-path" d="M 1340,560 C 1400,560 1420,560 1480,560" />
+        <path id="path-3" class="flow-path" d="M 1820,560 C 1880,560 1900,560 1960,560" />
+        <path id="path-4" class="flow-path" d="M 2300,560 C 2360,560 2380,560 2440,560" />
+      </svg>
+
+      <!-- CHAPTER 1 NODE -->
+      <div class="canvas-node active-chapter" id="node-0" style="left: 40px; top: 440px;" data-start="0">
+        <div class="node-header">
+          <span class="node-tag">Chapter 1</span>
+          <span class="node-time">00:00 - 00:10</span>
+        </div>
+        <div class="node-title">Edge Client & Ingress</div>
+        <div class="node-body">Client TLS handshake terminates at boundary proxy. Request parsed and signed.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane active">
+            <span>Edge Proxy Tier</span>
+            <span class="iso-meta">TLS 1.3 / HTTP2</span>
+          </div>
+          <div class="iso-plane">
+            <span>Ingress Gateway</span>
+            <span class="iso-meta">BGP Anycast</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 2 NODE -->
+      <div class="canvas-node" id="node-1" style="left: 520px; top: 440px;" data-start="10">
+        <div class="node-header">
+          <span class="node-tag">Chapter 2</span>
+          <span class="node-time">00:10 - 00:20</span>
+        </div>
+        <div class="node-title">Envoy API Gateway Match</div>
+        <div class="node-body">Matching header route rules. Upstream cluster identified with zero latency penalty.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane">
+            <span>Path Routing</span>
+            <span class="iso-meta">/v1/orders</span>
+          </div>
+          <div class="iso-plane">
+            <span>Cluster Route</span>
+            <span class="iso-meta">envoy_internal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 3 NODE -->
+      <div class="canvas-node" id="node-2" style="left: 1000px; top: 440px;" data-start="20">
+        <div class="node-header">
+          <span class="node-tag">Chapter 3</span>
+          <span class="node-time">00:20 - 00:30</span>
+        </div>
+        <div class="node-title">Redis 0.4ms Auth Cache</div>
+        <div class="node-body">Sub-millisecond token verification against cluster memory cache. Signature validated.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane">
+            <span>Auth Cache</span>
+            <span class="iso-meta">0.4ms HIT</span>
+          </div>
+          <div class="iso-plane">
+            <span>Permission Set</span>
+            <span class="iso-meta">write:orders</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 4 NODE -->
+      <div class="canvas-node" id="node-3" style="left: 1480px; top: 440px;" data-start="30">
+        <div class="node-header">
+          <span class="node-tag">Chapter 4</span>
+          <span class="node-time">00:30 - 00:40</span>
+        </div>
+        <div class="node-title">Postgres Primary WAL Commit</div>
+        <div class="node-body">ACID transaction commit written to Write-Ahead Log. Replicated synchronously.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane">
+            <span>WAL Flushed</span>
+            <span class="iso-meta">Sync Rep (x3)</span>
+          </div>
+          <div class="iso-plane">
+            <span>Row Committed</span>
+            <span class="iso-meta">Read-Committed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 5 NODE -->
+      <div class="canvas-node" id="node-4" style="left: 1960px; top: 440px;" data-start="40">
+        <div class="node-header">
+          <span class="node-tag">Chapter 5</span>
+          <span class="node-time">00:40 - 00:50</span>
+        </div>
+        <div class="node-title">Kafka 3D Partition Ring</div>
+        <div class="node-body">Event streamed to partition consumer group. Asynchronous workers triggered.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane">
+            <span>Partition Ring</span>
+            <span class="iso-meta">P-01 to P-08</span>
+          </div>
+          <div class="iso-plane">
+            <span>Async Consumer</span>
+            <span class="iso-meta">workers_proc</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAPTER 6 NODE -->
+      <div class="canvas-node" id="node-5" style="left: 2440px; top: 440px;" data-start="50">
+        <div class="node-header">
+          <span class="node-tag">Chapter 6</span>
+          <span class="node-time">00:50 - 01:00</span>
+        </div>
+        <div class="node-title">16.8ms Return Echo Complete</div>
+        <div class="node-body">Response assembled and returned through edge ingress. Full trace logged with zero drops.</div>
+        <div class="iso-tier-block">
+          <div class="iso-plane">
+            <span>End-to-End Latency</span>
+            <span class="iso-meta">16.8ms Total</span>
+          </div>
+          <div class="iso-plane">
+            <span>Trace Verification</span>
+            <span class="iso-meta">100% Trace</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING APP HEADER -->
+  <header class="app-header">
+    <div class="brand-pill">
       <div class="brand-logo">V</div>
-      <div class="brand-title">Breakdown: Infinite Canvas Player</div>
+      <span class="brand-name">Breakdown Infinite Canvas</span>
       <span class="brand-badge">Video.js v10</span>
     </div>
-    <div class="header-actions">
-      <button class="btn active" id="btn-sync" title="Automatically pan and zoom canvas as video chapters change">
-        <span>●</span> Auto-Camera: ON
-      </button>
-      <button class="btn" id="btn-recenter" title="Recenter canvas on active chapter">
-        Target Active Chapter
-      </button>
+
+    <!-- CANVAS CONTROLS (TOP RIGHT) -->
+    <div class="canvas-hud">
+      <div class="hud-coords" id="hud-coords">X: 0 Y: 0 • 100%</div>
+      <button class="hud-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
+      <button class="hud-btn" id="btn-zoom-out" title="Zoom Out (-)">-</button>
+      <button class="hud-btn text-btn" id="btn-fit-all" title="Fit all nodes in view">Fit All</button>
+      <button class="hud-btn text-btn" id="btn-auto-cam" title="Toggle Auto-Camera tracking">Auto-Cam: ON</button>
     </div>
   </header>
 
-  <!-- SPLIT WORKSPACE: VIDEO PLAYER TOP, INFINITE CANVAS UNDERNEATH -->
-  <div class="workspace">
+  <!-- THE VIDEO PLAYER IS ON THE CANVAS (FIXED FLOATING STAGE) -->
+  <div id="floating-player-card">
+    <div class="player-header">
+      <div class="player-header-left">
+        <div class="player-status-dot"></div>
+        <span class="active-chapter-text" id="player-chapter-text">1. Edge Client & HTTPS Ingress</span>
+      </div>
+      <div class="player-header-actions">
+        <button class="header-icon-btn" id="btn-minimize-player" title="Minimize / Expand Player">🗕</button>
+      </div>
+    </div>
 
-    <!-- UPPER DECK: VIDEO.JS V10 PLAYER & GROUNDED CONTROLS -->
-    <section class="player-deck">
-      <div class="video-viewport">
-        <video id="player" src="video.mp4" poster="poster.png" preload="metadata" playsinline></video>
-        <div class="video-overlay-play" id="overlay-play">
-          <div class="play-circle">▶</div>
+    <div class="video-viewport" id="player-viewport">
+      <video id="player" src="video.mp4" poster="poster.png" preload="metadata" playsinline></video>
+      <div class="video-overlay-play" id="overlay-play">
+        <div class="play-circle">▶</div>
+      </div>
+    </div>
+
+    <!-- GROUNDED CONTROLS CARD -->
+    <div class="controls-panel">
+      <!-- CHAPTER SEEK BAR -->
+      <div class="seek-container" id="seek-bar" tabindex="0" role="slider" aria-label="Chapter Seek Bar">
+        <div class="seek-rail">
+          <div class="seek-progress" id="seek-progress"></div>
+          <div class="seek-ticks" id="seek-ticks"></div>
         </div>
+        <div class="seek-thumb" id="seek-thumb"></div>
       </div>
 
-      <!-- DEDICATED GROUNDED CONTROLS CARD -->
-      <div class="controls-card">
-        <!-- CHAPTER SEEK BAR -->
-        <div class="seek-container" id="seek-bar" tabindex="0" role="slider" aria-label="Seek rail with chapters">
-          <div class="seek-rail">
-            <div class="seek-progress" id="seek-progress"></div>
-            <div class="seek-ticks" id="seek-ticks"></div>
+      <!-- CONTROLS ROW -->
+      <div class="controls-row">
+        <div class="ctrl-group">
+          <button class="ctrl-btn" id="btn-play" title="Play/Pause (K, Space)">▶</button>
+          <button class="ctrl-btn" id="btn-prev" title="Previous Chapter (&laquo;)">&laquo;</button>
+          <button class="ctrl-btn" id="btn-next" title="Next Chapter (&raquo;)">&raquo;</button>
+          <div class="time-readout">
+            <strong id="time-cur">00:00</strong> / <span id="time-dur">01:00</span>
           </div>
-          <div class="seek-thumb" id="seek-thumb"></div>
         </div>
 
-        <!-- CONTROLS ROW -->
-        <div class="controls-row">
-          <div class="controls-left">
-            <button class="ctrl-btn" id="btn-play" title="Play/Pause (K, Space)">▶</button>
-            <button class="ctrl-btn" id="btn-prev" title="Previous Chapter">&laquo;</button>
-            <button class="ctrl-btn" id="btn-next" title="Next Chapter">&raquo;</button>
-            <div class="time-display">
-              <strong id="time-cur">00:00</strong> / <span id="time-dur">01:00</span>
-            </div>
-            <div class="chapter-badge" id="chapter-title">1. Edge Client & HTTPS Ingress</div>
-          </div>
-
-          <div class="controls-right">
-            <button class="ctrl-btn" id="btn-mute" title="Mute/Unmute (M)">🔊</button>
-            <button class="ctrl-btn" id="btn-rate" title="Playback Speed">1.0x</button>
-            <button class="ctrl-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
-          </div>
+        <div class="ctrl-group">
+          <button class="ctrl-btn" id="btn-mute" title="Mute/Unmute (M)">🔊</button>
+          <button class="ctrl-btn" id="btn-rate" title="Playback Speed" style="width: auto; padding: 0 0.35rem; font-size: 0.72rem; font-weight: 600;">1.0x</button>
+          <button class="ctrl-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- LOWER DECK: INFINITE CANVASS UNDERNEATH -->
-    <section class="canvas-viewport" id="canvas-viewport">
-      <div class="infinite-grid" id="infinite-grid"></div>
+  <!-- EFFORTLESS CHAPTER NAVIGATION DOCK (BOTTOM CENTER) -->
+  <nav class="bottom-nav-dock" id="bottom-dock">
+    <button class="chapter-pill active" data-index="0">
+      <span class="pill-num">01</span> Edge Ingress
+    </button>
+    <button class="chapter-pill" data-index="1">
+      <span class="pill-num">02</span> Envoy Match
+    </button>
+    <button class="chapter-pill" data-index="2">
+      <span class="pill-num">03</span> Redis Auth
+    </button>
+    <button class="chapter-pill" data-index="3">
+      <span class="pill-num">04</span> Postgres WAL
+    </button>
+    <button class="chapter-pill" data-index="4">
+      <span class="pill-num">05</span> Kafka Ring
+    </button>
+    <button class="chapter-pill" data-index="5">
+      <span class="pill-num">06</span> Return Echo
+    </button>
+  </nav>
 
-      <!-- CANVAS HUD CONTROLS -->
-      <div class="canvas-hud">
-        <div class="hud-info" id="hud-coords">X: 0 Y: 0 • 100%</div>
-        <button class="btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
-        <button class="btn" id="btn-zoom-out" title="Zoom Out (-)">-</button>
-        <button class="btn" id="btn-zoom-reset" title="Reset View (100%)">100%</button>
-      </div>
-
-      <div class="canvas-bottom-hud">
-        <div class="pulse-dot"></div>
-        <span>Interactive Infinite Canvas: Drag background to pan • Wheel to zoom • Click nodes to seek video</span>
-      </div>
-
-      <!-- TRANSFORM WORLD -->
-      <div class="canvas-world" id="canvas-world">
-        <!-- SVG CONNECTOR PATHS -->
-        <svg class="connections-layer" id="svg-layer">
-          <path id="path-0" class="flow-line active" d="M 360,200 L 480,200" />
-          <path id="path-1" class="flow-line" d="M 800,200 L 920,200" />
-          <path id="path-2" class="flow-line" d="M 1240,200 L 1360,200" />
-          <path id="path-3" class="flow-line" d="M 1680,200 L 1800,200" />
-          <path id="path-4" class="flow-line" d="M 2120,200 L 2240,200" />
-        </svg>
-
-        <!-- NODE 1 -->
-        <div class="node-card active-chapter" id="node-0" style="left: 40px; top: 80px;" data-start="0">
-          <div class="node-header">
-            <span class="node-tag">Chapter 1</span>
-            <span class="node-time">00:00 - 00:10</span>
-          </div>
-          <div class="node-title">Edge Client & Ingress</div>
-          <div class="node-body">Client TLS handshake terminates at boundary proxy. Request parsed and signed.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane active">
-              <span>Edge Proxy Tier</span>
-              <span class="iso-meta">TLS 1.3 / HTTP2</span>
-            </div>
-            <div class="iso-plane">
-              <span>Ingress Gateway</span>
-              <span class="iso-meta">BGP Anycast</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- NODE 2 -->
-        <div class="node-card" id="node-1" style="left: 480px; top: 80px;" data-start="10">
-          <div class="node-header">
-            <span class="node-tag">Chapter 2</span>
-            <span class="node-time">00:10 - 00:20</span>
-          </div>
-          <div class="node-title">Envoy API Gateway Match</div>
-          <div class="node-body">Matching header route rules. Upstream cluster identified with zero latency penalty.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane">
-              <span>Path Routing</span>
-              <span class="iso-meta">/v1/orders</span>
-            </div>
-            <div class="iso-plane">
-              <span>Cluster Route</span>
-              <span class="iso-meta">envoy_internal</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- NODE 3 -->
-        <div class="node-card" id="node-2" style="left: 920px; top: 80px;" data-start="20">
-          <div class="node-header">
-            <span class="node-tag">Chapter 3</span>
-            <span class="node-time">00:20 - 00:30</span>
-          </div>
-          <div class="node-title">Redis 0.4ms JWT Auth</div>
-          <div class="node-body">Sub-millisecond token verification against cluster memory cache. Signature validated.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane">
-              <span>Auth Cache</span>
-              <span class="iso-meta">0.4ms HIT</span>
-            </div>
-            <div class="iso-plane">
-              <span>Permission Set</span>
-              <span class="iso-meta">write:orders</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- NODE 4 -->
-        <div class="node-card" id="node-3" style="left: 1360px; top: 80px;" data-start="30">
-          <div class="node-header">
-            <span class="node-tag">Chapter 4</span>
-            <span class="node-time">00:30 - 00:40</span>
-          </div>
-          <div class="node-title">Postgres Primary WAL Commit</div>
-          <div class="node-body">ACID transaction commit written to Write-Ahead Log. Replicated synchronously.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane">
-              <span>WAL Flushed</span>
-              <span class="iso-meta">Sync Rep (x3)</span>
-            </div>
-            <div class="iso-plane">
-              <span>Row Committed</span>
-              <span class="iso-meta">Isolation: Read-Committed</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- NODE 5 -->
-        <div class="node-card" id="node-4" style="left: 1800px; top: 80px;" data-start="40">
-          <div class="node-header">
-            <span class="node-tag">Chapter 5</span>
-            <span class="node-time">00:40 - 00:50</span>
-          </div>
-          <div class="node-title">Kafka 3D Partition Ring</div>
-          <div class="node-body">Event streamed to partition consumer group. Asynchronous workers triggered.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane">
-              <span>Partition Ring</span>
-              <span class="iso-meta">P-01 to P-08</span>
-            </div>
-            <div class="iso-plane">
-              <span>Async Consumer</span>
-              <span class="iso-meta">workers_order_proc</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- NODE 6 -->
-        <div class="node-card" id="node-5" style="left: 2240px; top: 80px;" data-start="50">
-          <div class="node-header">
-            <span class="node-tag">Chapter 6</span>
-            <span class="node-time">00:50 - 01:00</span>
-          </div>
-          <div class="node-title">16.8ms Return Echo Complete</div>
-          <div class="node-body">Response assembled and returned through edge ingress. Full trace logged with zero drops.</div>
-          <div class="iso-tier-block">
-            <div class="iso-plane">
-              <span>End-to-End Latency</span>
-              <span class="iso-meta">16.8ms Total</span>
-            </div>
-            <div class="iso-plane">
-              <span>Trace Verification</span>
-              <span class="iso-meta">OpenTelemetry 100%</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
+  <!-- RADAR MINIMAP (BOTTOM RIGHT) -->
+  <div class="minimap-container" id="minimap" title="Click anywhere on minimap to jump camera">
+    <div class="minimap-canvas" id="minimap-canvas">
+      <div class="minimap-viewport-box" id="minimap-viewport"></div>
+    </div>
   </div>
 
   <script>
@@ -698,7 +794,7 @@
       { start: 50, end: 60, title: "6. 16.8ms Return Echo Complete" },
     ];
 
-    // ELEMENTS
+    // PLAYER DOM
     const video = document.getElementById('player');
     const overlayPlay = document.getElementById('overlay-play');
     const btnPlay = document.getElementById('btn-play');
@@ -713,26 +809,33 @@
     const seekTicks = document.getElementById('seek-ticks');
     const timeCur = document.getElementById('time-cur');
     const timeDur = document.getElementById('time-dur');
-    const chapterTitle = document.getElementById('chapter-title');
+    const playerChapterText = document.getElementById('player-chapter-text');
+    const playerCard = document.getElementById('floating-player-card');
+    const btnMinimize = document.getElementById('btn-minimize-player');
 
-    // CANVAS ELEMENTS
-    const viewport = document.getElementById('canvas-viewport');
-    const grid = document.getElementById('infinite-grid');
+    // CANVAS DOM
+    const container = document.getElementById('canvas-container');
+    const grid = document.getElementById('grid-layer');
     const world = document.getElementById('canvas-world');
     const hudCoords = document.getElementById('hud-coords');
     const btnZoomIn = document.getElementById('btn-zoom-in');
     const btnZoomOut = document.getElementById('btn-zoom-out');
-    const btnZoomReset = document.getElementById('btn-zoom-reset');
-    const btnSync = document.getElementById('btn-sync');
-    const btnRecenter = document.getElementById('btn-recenter');
+    const btnFitAll = document.getElementById('btn-fit-all');
+    const btnAutoCam = document.getElementById('btn-auto-cam');
+    const bottomDock = document.getElementById('bottom-dock');
+    const minimapCanvas = document.getElementById('minimap-canvas');
+    const minimapViewport = document.getElementById('minimap-viewport');
 
-    // STATE
-    let panX = 40;
-    let panY = 40;
-    let scale = 0.95;
+    // CAMERA & PAN STATE
+    let panX = 100;
+    let panY = 50;
+    let targetPanX = 100;
+    let targetPanY = 50;
+    let scale = 0.85;
+    let targetScale = 0.85;
     let isPanning = false;
-    let startX = 0;
-    let startY = 0;
+    let dragStartX = 0;
+    let dragStartY = 0;
     let autoCamera = true;
     let currentChapter = 0;
 
@@ -746,14 +849,34 @@
       }
     });
 
-    // FORMAT TIME
+    // BUILD MINIMAP DOTS
+    const NODE_COORDS = [
+      { x: 40,   y: 440 },
+      { x: 520,  y: 440 },
+      { x: 1000, y: 440 },
+      { x: 1480, y: 440 },
+      { x: 1960, y: 440 },
+      { x: 2440, y: 440 }
+    ];
+
+    const WORLD_W = 2900;
+    const WORLD_H = 1200;
+
+    NODE_COORDS.forEach((coord, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'minimap-dot' + (i === 0 ? ' active' : '');
+      dot.id = `minimap-dot-${i}`;
+      dot.style.left = `${(coord.x / WORLD_W) * 100}%`;
+      dot.style.top = `${(coord.y / WORLD_H) * 100}%`;
+      minimapCanvas.appendChild(dot);
+    });
+
     function fmt(s) {
       const m = Math.floor(s / 60);
       const sec = Math.floor(s % 60);
       return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
     }
 
-    // UPDATE PLAYER STATE
     function updatePlayState() {
       if (video.paused) {
         btnPlay.textContent = '▶';
@@ -769,7 +892,7 @@
     overlayPlay.addEventListener('click', () => video.play());
     btnPlay.addEventListener('click', () => video.paused ? video.play() : video.pause());
 
-    // SEEK RAIL
+    // VIDEO TIMECODE TRACKING
     video.addEventListener('timeupdate', () => {
       const cur = video.currentTime;
       const dur = video.duration || 60;
@@ -779,18 +902,18 @@
       timeCur.textContent = fmt(cur);
       timeDur.textContent = fmt(dur);
 
-      // IDENTIFY ACTIVE CHAPTER
       const idx = CHAPTERS.findIndex(c => cur >= c.start && cur < c.end);
       if (idx !== -1 && idx !== currentChapter) {
         currentChapter = idx;
-        chapterTitle.textContent = CHAPTERS[idx].title;
-        updateActiveNode(idx);
+        playerChapterText.textContent = CHAPTERS[idx].title;
+        highlightActiveChapter(idx);
         if (autoCamera) {
-          centerOnNode(idx);
+          smoothFlyToChapter(idx);
         }
       }
     });
 
+    // SEEK BAR INTERACTION
     seekBar.addEventListener('click', (e) => {
       const rect = seekBar.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
@@ -800,14 +923,14 @@
     // CHAPTER STEPPING
     btnPrev.addEventListener('click', () => {
       const prev = Math.max(0, currentChapter - 1);
-      video.currentTime = CHAPTERS[prev].start;
+      jumpToChapter(prev);
     });
     btnNext.addEventListener('click', () => {
       const next = Math.min(CHAPTERS.length - 1, currentChapter + 1);
-      video.currentTime = CHAPTERS[next].start;
+      jumpToChapter(next);
     });
 
-    // VOLUME & RATE
+    // MUTE & RATE
     btnMute.addEventListener('click', () => {
       video.muted = !video.muted;
       btnMute.textContent = video.muted ? '🔇' : '🔊';
@@ -820,11 +943,14 @@
       btnRate.textContent = `${rates[idx]}x`;
     });
     btnFs.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    });
+
+    // MINIMIZE PLAYER TOGGLE
+    btnMinimize.addEventListener('click', () => {
+      playerCard.classList.toggle('minimized');
+      btnMinimize.textContent = playerCard.classList.contains('minimized') ? '🗖' : '🗕';
     });
 
     // KEYBOARD NAVIGATION
@@ -843,133 +969,181 @@
         video.currentTime = Math.min(video.duration || 60, video.currentTime + 5);
       } else if (e.key === 'ArrowLeft' || e.key === 'j') {
         video.currentTime = Math.max(0, video.currentTime - 5);
+      } else if (e.key >= '1' && e.key <= '6') {
+        jumpToChapter(parseInt(e.key) - 1);
       }
     });
 
     // ==========================================
-    // INFINITE CANVAS ENGINE
+    // BUTTERY-SMOOTH INFINITE CANVAS ENGINE
     // ==========================================
-    function updateTransform() {
+    function renderFrame() {
+      // Damped lerp interpolation for silky smooth camera transitions
+      panX += (targetPanX - panX) * 0.14;
+      panY += (targetPanY - panY) * 0.14;
+      scale += (targetScale - scale) * 0.14;
+
       world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       grid.style.backgroundPosition = `${panX}px ${panY}px`;
-      grid.style.backgroundSize = `${24 * scale}px ${24 * scale}px`;
+      grid.style.backgroundSize = `${28 * scale}px ${28 * scale}px`;
       hudCoords.textContent = `X: ${Math.round(panX)} Y: ${Math.round(panY)} • ${Math.round(scale * 100)}%`;
-    }
 
-    // PANNING
-    viewport.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.node-card') || e.target.closest('.canvas-hud')) return;
+      // UPDATE MINIMAP RECTANGLE
+      const cw = window.innerWidth;
+      const ch = window.innerHeight;
+      const mmW = 140;
+      const mmH = 90;
+
+      const normX = Math.max(0, Math.min(1, -panX / (WORLD_W * scale)));
+      const normY = Math.max(0, Math.min(1, -panY / (WORLD_H * scale)));
+      const normW = Math.max(0.08, Math.min(1, cw / (WORLD_W * scale)));
+      const normH = Math.max(0.08, Math.min(1, ch / (WORLD_H * scale)));
+
+      minimapViewport.style.left = `${normX * mmW}px`;
+      minimapViewport.style.top = `${normY * mmH}px`;
+      minimapViewport.style.width = `${normW * mmW}px`;
+      minimapViewport.style.height = `${normH * mmH}px`;
+
+      requestAnimationFrame(renderFrame);
+    }
+    requestAnimationFrame(renderFrame);
+
+    // MOUSE DRAG PANNING
+    container.addEventListener('mousedown', (e) => {
+      if (e.target.closest('#floating-player-card') || e.target.closest('.canvas-node') || e.target.closest('.bottom-nav-dock') || e.target.closest('.minimap-container') || e.target.closest('.app-header')) return;
       isPanning = true;
-      startX = e.clientX - panX;
-      startY = e.clientY - panY;
-      viewport.classList.add('panning');
+      dragStartX = e.clientX - targetPanX;
+      dragStartY = e.clientY - targetPanY;
+      container.classList.add('panning');
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isPanning) return;
-      panX = e.clientX - startX;
-      panY = e.clientY - startY;
-      updateTransform();
+      targetPanX = e.clientX - dragStartX;
+      targetPanY = e.clientY - dragStartY;
     });
 
     window.addEventListener('mouseup', () => {
       if (isPanning) {
         isPanning = false;
-        viewport.classList.remove('panning');
+        container.classList.remove('panning');
       }
     });
 
-    // ZOOMING AT CURSOR
-    viewport.addEventListener('wheel', (e) => {
+    // SMOOTH ZOOM AT CURSOR
+    container.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const rect = viewport.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
 
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newScale = Math.max(0.3, Math.min(2.5, scale * delta));
+      const delta = e.deltaY > 0 ? 0.88 : 1.14;
+      const newScale = Math.max(0.25, Math.min(2.0, targetScale * delta));
 
-      panX = mouseX - (mouseX - panX) * (newScale / scale);
-      panY = mouseY - (mouseY - panY) * (newScale / scale);
-      scale = newScale;
-      updateTransform();
+      targetPanX = mouseX - (mouseX - targetPanX) * (newScale / targetScale);
+      targetPanY = mouseY - (mouseY - targetPanY) * (newScale / targetScale);
+      targetScale = newScale;
     }, { passive: false });
 
     // HUD BUTTONS
     btnZoomIn.addEventListener('click', () => {
-      scale = Math.min(2.5, scale * 1.2);
-      updateTransform();
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const newScale = Math.min(2.0, targetScale * 1.25);
+      targetPanX = cx - (cx - targetPanX) * (newScale / targetScale);
+      targetPanY = cy - (cy - targetPanY) * (newScale / targetScale);
+      targetScale = newScale;
     });
+
     btnZoomOut.addEventListener('click', () => {
-      scale = Math.max(0.3, scale / 1.2);
-      updateTransform();
-    });
-    btnZoomReset.addEventListener('click', () => {
-      panX = 40; panY = 40; scale = 1.0;
-      updateTransform();
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const newScale = Math.max(0.25, targetScale / 1.25);
+      targetPanX = cx - (cx - targetPanX) * (newScale / targetScale);
+      targetPanY = cy - (cy - targetPanY) * (newScale / targetScale);
+      targetScale = newScale;
     });
 
-    // AUTO CAMERA TOGGLE
-    btnSync.addEventListener('click', () => {
+    btnFitAll.addEventListener('click', () => {
+      const cw = window.innerWidth;
+      targetScale = Math.min(1.0, cw / (WORLD_W + 200));
+      targetPanX = (cw - WORLD_W * targetScale) / 2;
+      targetPanY = 80;
+    });
+
+    btnAutoCam.addEventListener('click', () => {
       autoCamera = !autoCamera;
-      btnSync.classList.toggle('active', autoCamera);
-      btnSync.innerHTML = autoCamera ? '<span>●</span> Auto-Camera: ON' : 'Auto-Camera: OFF';
+      btnAutoCam.textContent = autoCamera ? 'Auto-Cam: ON' : 'Auto-Cam: OFF';
+      btnAutoCam.style.color = autoCamera ? 'var(--accent)' : 'var(--text-muted)';
     });
 
-    btnRecenter.addEventListener('click', () => centerOnNode(currentChapter));
+    // MINIMAP CLICK TO JUMP
+    document.getElementById('minimap').addEventListener('click', (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) / rect.width;
+      const clickY = (e.clientY - rect.top) / rect.height;
 
-    // ACTIVE NODE & CONNECTIONS
-    function updateActiveNode(idx) {
-      document.querySelectorAll('.node-card').forEach((card, i) => {
-        card.classList.toggle('active-chapter', i === idx);
+      const targetWorldX = clickX * WORLD_W;
+      const targetWorldY = clickY * WORLD_H;
+
+      targetPanX = (window.innerWidth / 2) - (targetWorldX * targetScale);
+      targetPanY = (window.innerHeight / 2) - (targetWorldY * targetScale);
+    });
+
+    // HIGHLIGHT CHAPTER ON NODES & PILLS
+    function highlightActiveChapter(idx) {
+      document.querySelectorAll('.canvas-node').forEach((node, i) => {
+        node.classList.toggle('active-chapter', i === idx);
       });
-      document.querySelectorAll('.flow-line').forEach((line, i) => {
-        line.classList.toggle('active', i === idx);
+      document.querySelectorAll('.chapter-pill').forEach((pill, i) => {
+        pill.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('.flow-path').forEach((path, i) => {
+        path.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('.minimap-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === idx);
       });
     }
 
-    // SMOOTH CAMERA GLIDE TO NODE
-    function centerOnNode(idx) {
-      const node = document.getElementById(`node-${idx}`);
-      if (!node) return;
+    // SMOOTH CAMERA GLIDE TO CHAPTER NODE
+    function smoothFlyToChapter(idx) {
+      const coord = NODE_COORDS[idx];
+      if (!coord) return;
 
-      const vRect = viewport.getBoundingClientRect();
-      const targetX = - (parseFloat(node.style.left) * scale) + (vRect.width / 2) - ((320 * scale) / 2);
-      const targetY = - (parseFloat(node.style.top) * scale) + (vRect.height / 2) - 100;
+      const cw = window.innerWidth;
+      const ch = window.innerHeight;
 
-      // Animate pan
-      const initialPanX = panX;
-      const initialPanY = panY;
-      const startTime = performance.now();
-      const duration = 500; // ms
-
-      function animate(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / duration);
-        const ease = 0.5 - Math.cos(progress * Math.PI) / 2; // easeInOut
-
-        panX = initialPanX + (targetX - initialPanX) * ease;
-        panY = initialPanY + (targetY - initialPanY) * ease;
-        updateTransform();
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      }
-      requestAnimationFrame(animate);
+      // Frame the node comfortably below the player
+      targetScale = 0.95;
+      targetPanX = (cw / 2) - ((coord.x + 170) * targetScale);
+      targetPanY = (ch / 2) - (coord.y * targetScale) + 80;
     }
 
-    // CLICK NODE TO JUMP VIDEO
-    document.querySelectorAll('.node-card').forEach(node => {
+    // JUMP TO CHAPTER (SEEK + GLIDE)
+    function jumpToChapter(idx) {
+      if (idx < 0 || idx >= CHAPTERS.length) return;
+      video.currentTime = CHAPTERS[idx].start;
+      video.play();
+      smoothFlyToChapter(idx);
+    }
+
+    // BOTTOM DOCK CLICKS
+    document.querySelectorAll('.chapter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const idx = parseInt(pill.dataset.index);
+        jumpToChapter(idx);
+      });
+    });
+
+    // CANVAS NODE CLICKS
+    document.querySelectorAll('.canvas-node').forEach((node, i) => {
       node.addEventListener('click', () => {
-        const start = parseFloat(node.dataset.start);
-        video.currentTime = start;
-        video.play();
+        jumpToChapter(i);
       });
     });
 
-    // INITIAL POSITION
-    updateTransform();
+    // INITIAL POSITION: FOCUS ON CHAPTER 1
+    smoothFlyToChapter(0);
   </script>
 </body>
 </html>
